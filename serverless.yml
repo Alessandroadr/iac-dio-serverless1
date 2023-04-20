@@ -1,0 +1,60 @@
+service: iac-serverless1
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:GetItem
+            - dynamodb:Scan
+          Resource:
+            - arn:aws:dynamodb:us-east-1:157864594527:table/ItemTableNew
+
+functions:
+  function1:
+    handler: /src/index.handler
+  insertItem: 
+    handler: /src/insertItem.handler
+    events:
+      - http:
+          path: /item
+          method: post
+  fetchItems:
+    handler: /src/fetchItems.handler
+    events:
+      - http:
+          path: /items
+          method: get
+  fetchItem:
+    handler: /src/fetchItem.handler
+    events:
+      - http:
+          path: /items/{id}
+          method: get
+  updateItems:
+    handler: /src/updateItems.handler
+    events:
+      - http:
+          path: /items/{id}
+          method: put
+
+resources:
+  Resources:
+    ItemTableNew:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ItemTableNew
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
